@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaveMart - Tez va Tejamkor Xarid</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 50%, #6366f1 100%);
+            padding: 1.5rem 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .logo-text {
+            color: white;
+        }
+
+        .tagline {
+            color: rgba(255,255,255,0.95);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        .delivery-info {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 0.75rem 1.25rem;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .search-container {
+            max-width: 700px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 1.2rem 3.5rem 1.2rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            box-shadow: 0 6px 30px rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+        }
+
+        .categories {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            padding: 1.5rem 1rem;
+            flex-wrap: wrap;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .category-btn {
+            padding: 0.85rem 2rem;
+            background: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #475569;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .category-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .category-btn.active {
+            background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        .product-image-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .product-card:hover .product-image {
+            transform: scale(1.1);
+        }
+
+        .savings-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .product-info {
+            padding: 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1e293b;
+        }
+
+        .price-comparison {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .price-comparison-title {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .price-list {
+            flex-grow: 1;
+        }
+
+        .price-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s;
+        }
+
+        .price-item:hover {
+            border-color: #0ea5e9;
+            transform: translateX(5px);
+        }
+
+        .store-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .store-name {
+            color: #1e293b;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .store-distance {
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+
+        .price-and-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .price {
+            font-weight: 700;
+            color: #0ea5e9;
+            font-size: 1.05rem;
+        }
+
+        .best-price-tag {
+            background: #10b981;
+            color: white;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f1f5f9;
+            padding: 0.35rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+        }
+
+        .qty-btn {
+            background: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            color: #0ea5e9;
+            transition: all 0.3s;
+        }
+
+        .qty-btn:hover {
+            background: #0ea5e9;
+            color: white;
+        }
+
+        .qty-input {
+            width: 50px;
+            text-align: center;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 0.35rem;
+            font-weight: 600;
+        }
+
+        .buy-from-store-btn {
+            background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .buy-from-store-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .cart-badge {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+            color: white;
+            padding: 1rem 1.75rem;
+            border-radius: 50px;
+            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
+            cursor: pointer;
+            font-weight: 700;
+            z-index: 1000;
+            transition: all 0.3s;
+            font-size: 1.05rem;
+        }
+
+        .cart-badge:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.5);
+        }
+
+        .cart-count {
+            background: #ef4444;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            margin-left: 0.75rem;
+            font-size: 0.9rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            background: white;
+            color: #1e293b;
+            padding: 1.25rem 1.75rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            transform: translateX(400px);
+            opacity: 0;
+            transition: all 0.4s;
+            z-index: 1001;
+            max-width: 350px;
+            border-left: 5px solid #10b981;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 2rem;
+            max-width: 700px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.4s;
+            margin: 2rem;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .close-btn {
+            background: #f1f5f9;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #64748b;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: #e2e8f0;
+            transform: rotate(90deg);
+        }
+
+        .cart-items {
+            margin-bottom: 2rem;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .cart-item-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .cart-item-info {
+            flex-grow: 1;
+        }
+
+        .cart-item-name {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .cart-item-store {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .cart-item-quantity {
+            color: #0ea5e9;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .cart-item-price {
+            font-weight: 700;
+            color: #0ea5e9;
+            font-size: 1.1rem;
+            text-align: right;
+        }
+
+        .remove-btn {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+        }
+
+        .remove-btn:hover {
+            background: #fecaca;
+        }
+
+        .cart-summary {
+            background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .summary-total {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0ea5e9;
+            border-top: 2px solid rgba(0,0,0,0.1);
+            padding-top: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .payment-methods {
+            margin-top: 2rem;
+        }
+
+        .payment-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        .payment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+        }
+
+        .payment-option {
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .payment-option:hover {
+            border-color: #0ea5e9;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .payment-option.selected {
+            border-color: #0ea5e9;
+            background: #eff6ff;
+        }
+
+        .payment-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .payment-name {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.9rem;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 1.25rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1.5rem;
+        }
+
+        .checkout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .checkout-btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #64748b;
+        }
+
+        .empty-cart-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Delivery Info */
+        .delivery-info-section {
+            margin-top: 2rem;
+        }
+
+        .courier-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .courier-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .courier-info {
+            flex-grow: 1;
+        }
+
+        .courier-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .courier-rating {
+            color: #f59e0b;
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .courier-phone {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .delivery-tracker {
+            background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+        }
+
+        .delivery-time {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #0ea5e9;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .delivery-label {
+            text-align: center;
+            color: #475569;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .delivery-status {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-step {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .status-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 45px;
+            width: 2px;
+            height: calc(100% - 20px);
+            background: #e2e8f0;
+        }
+
+        .status-step.completed::after {
+            background: #10b981;
+        }
+
+        .status-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            background: #e2e8f0;
+            color: #94a3b8;
+            z-index: 1;
+        }
+
+        .status-step.completed .status-icon {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .status-step.active .status-icon {
+            background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+            color: white;
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+
+        .status-content {
+            flex-grow: 1;
+            padding-top: 0.5rem;
+        }
+
+        .status-title {
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .status-desc {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .status-time {
+            color: #0ea5e9;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+
+        #map {
+            height: 350px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .delivery-info {
+                font-size: 0.85rem;
+                padding: 0.6rem 1rem;
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 1.5rem;
+            }
+
+            .category-btn {
+                padding: 0.7rem 1.5rem;
+                font-size: 0.9rem;
+            }
+
+            .cart-badge {
+                bottom: 20px;
+                right: 20px;
+                padding: 0.85rem 1.25rem;
+                font-size: 0.95rem;
+            }
+
+            .payment-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .courier-card {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <header>
+            <div class="header-content">
+                <div class="logo-section">
+                    <div>
+                        <div class="logo">💰 <span class="logo-text">SaveMart</span></div>
+                        <div class="tagline">Tejang va Tez Oling!</div>
+                    </div>
+                </div>
+                <div class="delivery-info">
+                    🚀 Tez yetkazib berish: 25-30 daqiqa
+                </div>
+            </div>
+        </header>
+
+        <div class="search-container">
+            <div class="search-wrapper">
+                <input type="text" class="search-box" placeholder="Mahsulot qidiring..." id="searchInput">
+                <span class="search-icon">🔍</span>
+            </div>
+        </div>
+
+        <div class="categories">
+            <button class="category-btn active" onclick="filterCategory('all')">🔥 Hammasi</button>
+            <button class="category-btn" onclick="filterCategory('mevalar')">🍎 Mevalar</button>
+            <button class="category-btn" onclick="filterCategory('sabzavotlar')">🥕 Sabzavotlar</button>
+            <button class="category-btn" onclick="filterCategory('ichimliklar')">🥤 Ichimliklar</button>
+        </div>
+
+        <div class="products-grid" id="productsGrid"></div>
+
+        <div class="cart-badge" onclick="viewCart()">
+            🛒 Savat <span class="cart-count" id="cartCount">0</span>
+        </div>
+
+        <div class="notification" id="notification"></div>
+
+        <!-- Cart Modal -->
+        <div class="modal" id="cartModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">🛒 Savatingiz</div>
+                    <button class="close-btn" onclick="closeCartModal()">×</button>
+                </div>
+                <div id="cartContent"></div>
+            </div>
+        </div>
+
+        <!-- Checkout Modal -->
+        <div class="modal" id="checkoutModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">💳 To'lov</div>
+                    <button class="close-btn" onclick="closeCheckoutModal()">×</button>
+                </div>
+
+                <div class="payment-methods">
+                    <div class="payment-title">To'lov usulini tanlang:</div>
+                    <div class="payment-grid">
+                        <div class="payment-option" onclick="selectPayment('click')">
+                            <div class="payment-icon">💳</div>
+                            <div class="payment-name">Click</div>
+                        </div>
+                        <div class="payment-option" onclick="selectPayment('payme')">
+                            <div class="payment-icon">💰</div>
+                            <div class="payment-name">Payme</div>
+                        </div>
+                        <div class="payment-option" onclick="selectPayment('paynet')">
+                            <div class="payment-icon">🏦</div>
+                            <div class="payment-name">Paynet</div>
+                        </div>
+                        <div class="payment-option" onclick="selectPayment('uzumbank')">
+                            <div class="payment-icon">🍇</div>
+                            <div class="payment-name">Uzum Bank</div>
+                        </div>
+                        <div class="payment-option" onclick="selectPayment('apelsin')">
+                            <div class="payment-icon">🍊</div>
+                            <div class="payment-name">Apelsin</div>
+                        </div>
+                        <div class="payment-option" onclick="selectPayment('anorbank')">
+                            <div class="payment-icon">💎</div>
+                            <div class="payment-name">Anor Bank</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cart-summary" style="margin-top: 2rem;">
+                    <div class="summary-row">
+                        <span>Mahsulotlar:</span>
+                        <span id="checkoutSubtotal">0 so'm</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Yetkazib berish:</span>
+                        <span>5,000 so'm</span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <span>Jami:</span>
+                        <span id="checkoutTotal">0 so'm</span>
+                    </div>
+                </div>
+
+                <button class="checkout-btn" id="payBtn" onclick="processPayment()" disabled>
+                    To'lov usulini tanlang
+                </button>
+            </div>
+        </div>
+
+        <!-- Delivery Tracking Modal -->
+        <div class="modal" id="deliveryModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">📦 Buyurtma Kuzatuvi</div>
+                    <button class="close-btn" onclick="closeDeliveryModal()">×</button>
+                </div>
+
+                <div class="delivery-info-section">
+                    <div class="courier-card">
+                        <div class="courier-avatar">👨‍🦱</div>
+                        <div class="courier-info">
+                            <div class="courier-name">Alisher Rahimov</div>
+                            <div class="courier-rating">⭐⭐⭐⭐⭐ 4.9 (250+ yetkazib berish)</div>
+                            <div class="courier-phone">📱 +998 90 123 45 67</div>
+                        </div>
+                    </div>
+
+                    <div class="delivery-tracker">
+                        <div class="delivery-time" id="deliveryTime">28</div>
+                        <div class="delivery-label">daqiqada yetkaziladi</div>
+                    </div>
+
+                    <div class="delivery-status">
+                        <div class="status-step completed">
+                            <div class="status-icon">✓</div>
+                            <div class="status-content">
+                                <div class="status-title">Buyurtma qabul qilindi</div>
+                                <div class="status-desc">Buyurtmangiz muvaffaqiyatli tasdiqlandi</div>
+                                <div class="status-time">14:30</div>
+                            </div>
+                        </div>
+
+                        <div class="status-step completed">
+                            <div class="status-icon">📦</div>
+                            <div class="status-content">
+                                <div class="status-title">Tayyorlanmoqda</div>
+                                <div class="status-desc">Mahsulotlar yig'ilmoqda</div>
+                                <div class="status-time">14:35</div>
+                            </div>
+                        </div>
+
+                        <div class="status-step active">
+                            <div class="status-icon">🚚</div>
+                            <div class="status-content">
+                                <div class="status-title">Yo'lda</div>
+                                <div class="status-desc">Kuryer sizga kelmoqda</div>
+                                <div class="status-time">14:42 (hozir)</div>
+                            </div>
+                        </div>
+
+                        <div class="status-step">
+                            <div class="status-icon">🏠</div>
+                            <div class="status-content">
+                                <div class="status-title">Yetkazildi</div>
+                                <div class="status-desc">Mahsulotlar topshiriladi</div>
+                                <div class="status-time">~15:10</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="map"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const products = [
+            {
+                id: 1,
+                name: "Olma",
+                unit: "kg",
+                category: "mevalar",
+                image: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400&h=300&fit=crop",
+                prices: [
+                    { store: "Havas", price: 18000, distance: "2.5 km" },
+                    { store: "Korzinka", price: 16500, distance: "1.8 km" },
+                    { store: "Makro", price: 17000, distance: "3.2 km" }
+                ]
+            },
+            {
+                id: 2,
+                name: "Banan",
+                unit: "kg",
+                category: "mevalar",
+                image: "https://images.unsplash.com/photo-1603833665858-e61d17a86224?w=400&h=300&fit=crop",
+                prices: [
+                    { store: "Havas", price: 22000, distance: "2.5 km" },
+                    { store: "Korzinka", price: 21000, distance: "1.8 km" },
+                    { store: "Makro", price: 23000, distance: "3.2 km" }
+                ]
+            },
+            {
+                id: 3,
+                name: "Uzum",
+                unit: "kg",
+                category: "mevalar",
+                image: "https://images.unsplash.com/photo-1599819177520-40c1c31e3de9?w=400&h=300&fit=crop",
+                prices: [
+                    { store: "Havas", price: 25000, distance: "2.5 km" },
+                    { store: "Korzinka", price: 24000, distance: "1.8 km" },
+                    { store: "Makro", price: 26000, distance: "3.2 km" }
+                ]
+            },
+            {
+                id: 4,
+                name: "Pomidor",
+                unit: "kg",
+                category: "sabzavotlar",
+                image: "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?w=400&h=300&fit=crop",
+                prices: [
+                    { store: "Havas", price: 12000, distance: "2.5 km" },
+                    { store: "Korzinka", price: 11500, distance: "1.8 km" },
+                    { store: "Makro", price: 13000, distance: "3.2 km" }
+                ]
+            },
+            {
+                id: 5,
+                name: "Bodring",
+                unit: "kg",
+                category: "sabzavotlar",
+                image: "https://images.unsplash.com/photo-1604977042946-1eecc30f269e?w=400&h=300&fit=crop",
+                prices: [
+                    { store: "Havas", price: 9000, distance: "2.5 km" },
+                    { store: "Korzinka", price: 8500, distance: "1.8 km" },
+                    { store: "Makro", price: 9500, distance: "3.2 km" }
+                ]
+            },
+            {
+                id: 6,
+                name: "Sabzi",
+                unit: "kg",
+                category: "sabzavotlar",
+                image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=400&h=300&fit=crop",
+                prices: [
+                    { store: "Havas", price: 7000, distance: "2.5 km" },
+                    { store: "Korzinka", price: 6500, distance: "1.8 km" },
+                    { store: "Makro", price: 7500, distance: "3.2 km" }
+                ]
+            },
+            {
+                id: 7,
+                name: "Coca-Cola",
+                unit: "dona",
+                category: "ichimliklar",
+                image: "https://images.unsplash.com/photo-1554866585-cd94860890b7?w=400&h=300&fit=crop",
+                prices: [
+                    { store: "Havas", price: 11000, distance: "2.5 km" },
+                    { store: "Korzinka", price: 10500, distance: "1.8 km" },
+                    { store: "Makro", price: 11500, distance: "3.2 km" }
+                ]
+            },
+            {
+                id: 8,
+                name: "Suv",
+                unit: "dona",
+                category: "ichimliklar",
+                image: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=400&h=300&fit=crop",
+                prices: [
+                    { store: "Havas", price: 5000, distance: "2.5 km" },
+                    { store: "Korzinka", price: 4500, distance: "1.8 km" },
+                    { store: "Makro", price: 5500, distance: "3.2 km" }
+                ]
+            },
+            {
+                id: 9,
+                name: "Sharbat",
+                unit: "dona",
+                category: "ichimliklar",
+                image: "https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=400&h=300&fit=crop",
+                prices: [
+                    { store: "Havas", price: 15000, distance: "2.5 km" },
+                    { store: "Korzinka", price: 14000, distance: "1.8 km" },
+                    { store: "Makro", price: 15500, distance: "3.2 km" }
+                ]
+            }
+        ];
+
+        let cart = [];
+        let currentCategory = 'all';
+        let selectedPaymentMethod = null;
+        let map;
+        let courierMarker;
+
+        function displayProducts(productsToShow) {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '';
+
+            productsToShow.forEach(product => {
+                const prices = product.prices.sort((a, b) => a.price - b.price);
+                const minPrice = prices[0].price;
+                const maxPrice = prices[prices.length - 1].price;
+                const savings = maxPrice - minPrice;
+                
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <div class="product-image-wrapper">
+                        <img src="${product.image}" alt="${product.name}" class="product-image">
+                        ${savings > 0 ? `<div class="savings-badge">💎 ${savings.toLocaleString('uz-UZ')} so'm tejang</div>` : ''}
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">${product.name}</div>
+                        <div class="price-comparison">
+                            <div class="price-comparison-title">🏪 Do'konlarni tanlang:</div>
+                            <div class="price-list">
+                                ${prices.map(p => `
+                                    <div class="price-item">
+                                        <div class="store-info">
+                                            <div class="store-name">${p.price === minPrice ? '⭐ ' : ''}${p.store}</div>
+                                            <div class="store-distance">📍 ${p.distance}</div>
+                                        </div>
+                                        <div class="price-and-btn">
+                                            <div>
+                                                <div class="price">${p.price.toLocaleString('uz-UZ')} so'm/${product.unit}</div>
+                                                ${p.price === minPrice ? '<div class="best-price-tag">Eng arzon</div>' : ''}
+                                                <div class="quantity-selector">
+                                                    <button class="qty-btn" onclick="changeQty(event, -1)">−</button>
+                                                    <input type="number" class="qty-input" value="1" min="0.5" step="0.5" data-product="${product.id}" data-store="${p.store}">
+                                                    <button class="qty-btn" onclick="changeQty(event, 1)">+</button>
+                                                    <span style="font-size: 0.85rem; color: #64748b; margin-left: 0.25rem;">${product.unit}</span>
+                                                </div>
+                                            </div>
+                                            <button class="buy-from-store-btn" onclick='addToCart(${product.id}, "${p.store}", ${p.price})'>
+                                                🛒 Olish
+                                            </button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function changeQty(event, change) {
+            event.stopPropagation();
+            const input = event.target.parentElement.querySelector('.qty-input');
+            let currentValue = parseFloat(input.value);
+            let newValue = currentValue + change;
+            if (newValue >= 0.5) {
+                input.value = newValue;
+            }
+        }
+
+        function filterCategory(category) {
+            currentCategory = category;
+            const buttons = document.querySelectorAll('.category-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const filtered = category === 'all' 
+                ? products 
+                : products.filter(p => p.category === category);
+            
+            displayProducts(filtered);
+        }
+
+        function addToCart(productId, store, pricePerUnit) {
+            const product = products.find(p => p.id === productId);
+            const qtyInput = document.querySelector(`.qty-input[data-product="${productId}"][data-store="${store}"]`);
+            const quantity = parseFloat(qtyInput.value);
+
+            if (quantity <= 0) {
+                showNotification('❌ Miqdorni kiriting!');
+                return;
+            }
+
+            cart.push({
+                ...product,
+                selectedStore: store,
+                selectedPrice: pricePerUnit,
+                quantity: quantity,
+                totalPrice: pricePerUnit * quantity
+            });
+            
+            updateCartCount();
+            showNotification(`✅ ${quantity} ${product.unit} ${product.name} savatga qo'shildi! (${store})`);
+            qtyInput.value = 1; // Reset quantity
+        }
+
+        function updateCartCount() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartCount').textContent = totalItems.toFixed(1);
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function viewCart() {
+            const modal = document.getElementById('cartModal');
+            const content = document.getElementById('cartContent');
+
+            if (cart.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-cart">
+                        <div class="empty-cart-icon">🛒</div>
+                        <h3>Savatingiz bo'sh</h3>
+                        <p>Mahsulot qo'shish uchun xarid qilishni boshlang!</p>
+                    </div>
+                `;
+            } else {
+                const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+                const delivery = 5000;
+                const total = subtotal + delivery;
+
+                content.innerHTML = `
+                    <div class="cart-items">
+                        ${cart.map((item, index) => `
+                            <div class="cart-item">
+                                <img src="${item.image}" alt="${item.name}" class="cart-item-image">
+                                <div class="cart-item-info">
+                                    <div class="cart-item-name">${item.name}</div>
+                                    <div class="cart-item-store">🏪 ${item.selectedStore}</div>
+                                    <div class="cart-item-quantity">📦 ${item.quantity} ${item.unit} × ${item.selectedPrice.toLocaleString('uz-UZ')} so'm</div>
+                                </div>
+                                <div>
+                                    <div class="cart-item-price">${item.totalPrice.toLocaleString('uz-UZ')} so'm</div>
+                                    <button class="remove-btn" onclick="removeFromCart(${index})">🗑️</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="cart-summary">
+                        <div class="summary-row">
+                            <span>Mahsulotlar:</span>
+                            <span>${subtotal.toLocaleString('uz-UZ')} so'm</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Yetkazib berish:</span>
+                            <span>${delivery.toLocaleString('uz-UZ')} so'm</span>
+                        </div>
+                        <div class="summary-row summary-total">
+                            <span>Jami:</span>
+                            <span>${total.toLocaleString('uz-UZ')} so'm</span>
+                        </div>
+                    </div>
+
+                    <button class="checkout-btn" onclick="proceedToCheckout()">
+                        💳 To'lovga o'tish
+                    </button>
+                `;
+            }
+
+            modal.classList.add('show');
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartCount();
+            viewCart();
+            showNotification('🗑️ Mahsulot o\'chirildi');
+        }
+
+        function closeCartModal() {
+            document.getElementById('cartModal').classList.remove('show');
+        }
+
+        function proceedToCheckout() {
+            if (cart.length === 0) return;
+
+            const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+            const total = subtotal + 5000;
+
+            document.getElementById('checkoutSubtotal').textContent = subtotal.toLocaleString('uz-UZ') + ' so\'m';
+            document.getElementById('checkoutTotal').textContent = total.toLocaleString('uz-UZ') + ' so\'m';
+
+            closeCartModal();
+            document.getElementById('checkoutModal').classList.add('show');
+        }
+
+        function selectPayment(method) {
+            selectedPaymentMethod = method;
+            
+            document.querySelectorAll('.payment-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            event.currentTarget.classList.add('selected');
+            
+            const payBtn = document.getElementById('payBtn');
+            payBtn.disabled = false;
+            payBtn.textContent = `${method.charAt(0).toUpperCase() + method.slice(1)} orqali to'lash`;
+        }
+
+        function processPayment() {
+            if (!selectedPaymentMethod) return;
+
+            showNotification(`✅ To'lov muvaffaqiyatli amalga oshirildi!`);
+            closeCheckoutModal();
+            
+            setTimeout(() => {
+                showDeliveryTracking();
+            }, 500);
+        }
+
+        function showDeliveryTracking() {
+            const modal = document.getElementById('deliveryModal');
+            modal.classList.add('show');
+            
+            setTimeout(() => {
+                initMap();
+                animateCourier();
+            }, 300);
+
+            // Clear cart
+            cart = [];
+            updateCartCount();
+        }
+
+        function initMap() {
+            if (map) return;
+
+            map = L.map('map').setView([41.2995, 69.2401], 14);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            // Store
+            const storeMarker = L.marker([41.3111, 69.2797]).addTo(map);
+            storeMarker.bindPopup('<b>🏪 Korzinka</b><br>Do\'kon');
+
+            // Customer
+            const customerMarker = L.marker([41.2995, 69.2401]).addTo(map);
+            customerMarker.bindPopup('<b>🏠 Sizning uyingiz</b>').openPopup();
+
+            // Route
+            L.polyline([
+                [41.3111, 69.2797],
+                [41.3050, 69.2650],
+                [41.2995, 69.2401]
+            ], {
+                color: '#0ea5e9',
+                weight: 4,
+                opacity: 0.6,
+                dashArray: '10, 10'
+            }).addTo(map);
+
+            // Courier (starting position)
+            courierMarker = L.marker([41.3111, 69.2797], {
+                icon: L.divIcon({
+                    html: '<div style="font-size: 24px;">🚚</div>',
+                    className: 'courier-icon',
+                    iconSize: [30, 30]
+                })
+            }).addTo(map);
+        }
+
+        function animateCourier() {
+            const route = [
+                [41.3111, 69.2797],
+                [41.3080, 69.2720],
+                [41.3050, 69.2650],
+                [41.3020, 69.2550],
+                [41.2995, 69.2401]
+            ];
+            
+            let step = 0;
+            const interval = setInterval(() => {
+                if (step < route.length && courierMarker) {
+                    courierMarker.setLatLng(route[step]);
+                    step++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 3000);
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkoutModal').classList.remove('show');
+            selectedPaymentMethod = null;
+        }
+
+        function closeDeliveryModal() {
+            document.getElementById('deliveryModal').classList.remove('show');
+        }
+
+        // Search
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = products.filter(p => 
+                p.name.toLowerCase().includes(searchTerm) &&
+                (currentCategory === 'all' || p.category === currentCategory)
+            );
+            displayProducts(filtered);
+        });
+
+        // Close modals on outside click
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        }
+
+        // Initial display
+        displayProducts(products);
+    </script>
+</body>
+</html>
